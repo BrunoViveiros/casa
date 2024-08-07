@@ -29,13 +29,15 @@ class CaseContact < ApplicationRecord
   # Draft support requires the casa_case to be nil if the contact is in_progress
   belongs_to :casa_case, optional: true
   validates :casa_case_id, presence: true, if: :active?
-  validate :draft_case_ids_not_empty, if: :active_or_details?
+  validate :draft_case_ids_not_empty, unless: :started?
 
   has_many :case_contact_contact_types
   has_many :contact_types, through: :case_contact_contact_types
 
   has_many :additional_expenses
   has_many :contact_topic_answers, dependent: :destroy
+
+  after_save_commit ::CaseContactMetadataCallback.new
 
   # Corresponds to the steps in the controller, so validations for certain columns can happen at those steps.
   # These steps must be listed in order and have an html template in case_contacts/form.
@@ -50,7 +52,7 @@ class CaseContact < ApplicationRecord
     status == "expenses" || active?
   end
 
-  accepts_nested_attributes_for :additional_expenses, reject_if: :all_blank
+  accepts_nested_attributes_for :additional_expenses, reject_if: :all_blank, allow_destroy: true
   validates_associated :additional_expenses
 
   accepts_nested_attributes_for :casa_case
@@ -233,14 +235,14 @@ class CaseContact < ApplicationRecord
 
   def contact_groups_with_types
     hash = Hash.new { |h, k| h[k] = [] }
-    contact_types.each do |contact_type|
+    contact_types.includes(:contact_type_group).each do |contact_type|
       hash[contact_type.contact_type_group.name] << contact_type.name
     end
     hash
   end
 
   def requested_followup
-    followups.requested.first
+    followups.find(&:requested?)
   end
 
   def should_send_reimbursement_email?
@@ -320,6 +322,7 @@ end
 #  draft_case_ids             :integer          default([]), is an Array
 #  duration_minutes           :integer
 #  medium_type                :string
+#  metadata                   :jsonb
 #  miles_driven               :integer          default(0), not null
 #  notes                      :string
 #  occurred_at                :datetime

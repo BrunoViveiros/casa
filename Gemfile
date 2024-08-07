@@ -3,7 +3,7 @@
 source "https://rubygems.org"
 
 ruby "3.2.2"
-gem "rails", "7.1.3.3"
+gem "rails", "7.1.3.4"
 
 gem "after_party" # post-deployment tasks
 gem "amazing_print" # easier console reading
@@ -12,7 +12,7 @@ gem "azure-storage-blob", require: false
 gem "blueprinter" # for JSON serialization
 gem "bugsnag" # tracking errors in prod
 gem "caxlsx", "~> 4.1" # excel spreadsheets - TODO can we remove this version restriction?
-gem "caxlsx_rails", "~> 0.6.3" # excel spreadsheets - TODO can we remove this version restriction?
+gem "caxlsx_rails", "~> 0.6.4" # excel spreadsheets - TODO can we remove this version restriction?
 gem "cssbundling-rails", "~> 1.4" # compiles css
 gem "delayed_job_active_record"
 gem "devise" # for authentication
@@ -72,7 +72,7 @@ group :development, :test do
   gem "rspec-rails"
   gem "rswag-specs"
   gem "shoulda-matchers"
-  gem "standard", "~> 1.39.0"
+  gem "standard", "~> 1.39.2"
 end
 
 group :development do
